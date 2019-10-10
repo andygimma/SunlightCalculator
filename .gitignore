@@ -1,0 +1,7 @@
+venv/
+/usr/local/bin/virtualenv
+/Users/andy/anaconda2/bin/conda
+/Users/andy/anaconda2/bin/python
+bin/
+lib/
+include/
