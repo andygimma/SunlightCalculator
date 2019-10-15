@@ -10,20 +10,17 @@ class SunlightCalculator:
         self.day = day
         self.year = year
         self.num_years = num_years
+        self.temps = []
 
-    def _daily_insolation(self, lat, day, num_years):
-        years = np.linspace(-num_years, 0, num_years)
+    def _daily_insolation(self, day):
+        years = np.linspace(-self.num_years, 0, self.num_years)
         orb = OrbitalTable.interp(kyear=years)
-        return daily_insolation(lat=lat, day=day, orb=orb)
+        return daily_insolation(lat=self.lat, day=day, orb=orb)
 
-    def get_daily_average(self, lat=None, day=None, num_years=None):
-        lat = lat if lat else self.lat
-        day = day if day else self.day
-        num_years = num_years if num_years else self.num_years
-
+    def get_daily_average(self, day):
         running_total = 0
 
-        insolation_data = self._daily_insolation(lat, day, num_years)
+        insolation_data = self._daily_insolation(day)
         for x in insolation_data:
             S_dict = x.to_dict()
             running_total += S_dict['data']
@@ -31,27 +28,25 @@ class SunlightCalculator:
         average = running_total / len(insolation_data)
         return average
 
-    def get_daily_averages_for_year(self, lat=None, num_years=None):
-        lat = lat if lat else self.lat
-        num_years = num_years if num_years else self.num_years
+    def get_daily_averages_for_year(self):
         daily_averages = []
-        temps = []
+        self.temps = []
         for day in range(1, 366):
-            avg = self.get_daily_average(lat=lat, day=day, num_years=num_years)
+            avg = self.get_daily_average(day)
             print("day: ", day, avg)
-            temps.append(avg)
+            self.temps.append(avg)
             day_avg_tuple = (day, avg)
             daily_averages.append(day_avg_tuple)
-        self.plot_graph(temps, lat)
+        self.plot_graph()
         return daily_averages
 
-    def plot_graph(self, temps_array, lat):
+    def plot_graph(self):
         print("*** STARTING GRAPH ***")
-        plt.plot(range(1, 366), temps_array)
+        plt.plot(range(1, 366), self.temps)
         plt.xlabel('Day of year')
         plt.ylabel('Insolation')
         plt.ylim([0, 600])
-        title = "Yearly insolation at " + str(lat) + " degrees latitude"
+        title = "Yearly insolation at " + str(self.lat) + " degrees latitude"
         plt.title(title)
         plt.show()
 
@@ -76,3 +71,7 @@ print("Daily: ", calc.get_yearly_average())
 # def get_yearly_average(lat, num_years)
 # def get_daily_average(day, num_years)
 # def get_daily_averages_for_year(lat, num_years)
+
+# TODO
+# Remove all args from methods
+# Easier to test and reason about
