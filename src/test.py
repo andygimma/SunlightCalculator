@@ -2,6 +2,7 @@ import numpy as np
 from climlab.solar.orbital import OrbitalTable
 from climlab.solar.insolation import daily_insolation
 import matplotlib.pyplot as plt
+from functools import reduce
 
 
 class SunlightCalculator:
@@ -18,30 +19,21 @@ class SunlightCalculator:
         return daily_insolation(lat=self.lat, day=day, orb=orb)
 
     def get_daily_average(self, day):
-        running_total = 0
-
         insolation_data = self._daily_insolation(day)
-        for x in insolation_data:
-            S_dict = x.to_dict()
-            running_total += S_dict['data']
-
-        average = running_total / len(insolation_data)
+        acc = reduce((lambda x, y: x + y.to_dict()['data']), insolation_data)
+        average = acc.to_dict()['data'] / len(insolation_data)
         return average
 
-    def get_daily_averages_for_year(self):
-        daily_averages = []
+    def get_temps_for_year(self):
         self.temps = []
         for day in range(1, 366):
             avg = self.get_daily_average(day)
             print("day: ", day, avg)
             self.temps.append(avg)
-            day_avg_tuple = (day, avg)
-            daily_averages.append(day_avg_tuple)
-        self.plot_graph()
-        return daily_averages
 
-    def plot_graph(self):
-        print("*** STARTING GRAPH ***")
+    def plot_graph_for_year(self):
+        if (len(self.temps) == 0):
+            self.get_temps_for_year()
         plt.plot(range(1, 366), self.temps)
         plt.xlabel('Day of year')
         plt.ylabel('Insolation')
@@ -51,27 +43,15 @@ class SunlightCalculator:
         plt.show()
 
     def get_yearly_average(self):
-        avgs = self.get_daily_averages_for_year()
-        # print(avgs)
-        acc = 0
-        for x in range(0, len(avgs)):
-            acc += avgs[x][1]
-        return acc / len(avgs)
+        self.get_temps_for_year()
+        acc = reduce((lambda x, y: x + y), self.temps)
+        return acc / len(self.temps)
 
     def get_daily_averages_for_multiple_years(self, lat, num_years):
         pass
 
 
 calc = SunlightCalculator(lat=6.3, day=172, year=2019, num_years=20)
-# print("Average: ", calc.get_daily_average())
-print("Daily: ", calc.get_yearly_average())
-
-# Public API
-# SunlightCalculator(lat, year, num_years)
-# def get_yearly_average(lat, num_years)
-# def get_daily_average(day, num_years)
-# def get_daily_averages_for_year(lat, num_years)
-
-# TODO
-# Remove all args from methods
-# Easier to test and reason about
+# print("Average: ", calc.get_temps_for_year())
+# print("Daily: ", calc.plot_graph_for_year())
+print("get_daily_average", calc.get_daily_average(1))
