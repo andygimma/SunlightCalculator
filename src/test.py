@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 
 class SunlightCalculator:
-    def __init__(self, lat=0, day=1, year=2019, num_years=1):
+    def __init__(self, lat=0, day=1, year=2019, num_years=10):
         self.lat = lat
         self.day = day
         self.year = year
